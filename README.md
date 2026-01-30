@@ -2,7 +2,7 @@
 
 ## 概述
 
-光束质量分析系统前端客户端，基于 WPF + .NET 9.0 + MVVM 架构构建，提供工业上位机UI和实时数据可视化功能。
+光束质量分析系统前端客户端，基于 WPF + .NET 8.0 + MVVM 架构构建，提供深色工业风格 UI 和实时数据可视化功能。
 
 ## 项目结构
 
@@ -23,28 +23,29 @@ BeamQualityAnalyzer.Frontend/
 
 ## 技术栈
 
-- **.NET 9.0**: 运行时框架
+- **.NET 8.0**: 运行时框架
 - **WPF**: UI 框架
-- **MVVM**: 架构模式
+- **MVVM**: 架构模式（CommunityToolkit.Mvvm）
 - **SignalR Client**: 实时通信客户端
-- **CommunityToolkit.Mvvm**: MVVM 工具包
-- **ScottPlot**: 2D 图表库（待添加）
-- **HelixToolkit.Wpf**: 3D 可视化库（待添加）
+- **ScottPlot 5.0**: 2D 图表库
+- **HelixToolkit.Wpf**: 3D 可视化库
+- **Entity Framework Core**: 本地配置数据库
 - **Serilog**: 日志记录
 
 ## 快速开始
 
 ### 前置要求
 
-- .NET 9.0 SDK
+- .NET 8.0 SDK
 - Visual Studio 2022 或 VS Code
-- 后端服务运行中
+- Windows 10/11 操作系统
+- 后端服务运行中（默认 http://192.168.0.196:5000）
 
 ### 本地开发
 
 1. 克隆仓库：
 ```bash
-git clone https://github.com/yourorg/BeamQualityAnalyzer.Frontend.git
+git clone https://github.com/autcommes/BeamQualityAnalyzer.Frontend.git
 cd BeamQualityAnalyzer.Frontend
 ```
 
@@ -53,12 +54,10 @@ cd BeamQualityAnalyzer.Frontend
 dotnet restore
 ```
 
-3. 配置服务器地址（编辑 `src/BeamQualityAnalyzer.WpfClient/appsettings.json`）：
-```json
-{
-  "ServerUrl": "http://localhost:5000"
-}
-```
+3. 配置服务器地址（可选，默认为 http://192.168.0.196:5000）：
+   - 启动客户端后，点击右上角设置按钮
+   - 修改服务器 URL
+   - 点击保存
 
 4. 运行客户端：
 ```bash
@@ -67,36 +66,44 @@ dotnet run --project src/BeamQualityAnalyzer.WpfClient
 
 ## 配置说明
 
-### appsettings.json
+### 设置对话框
 
-```json
-{
-  "ServerUrl": "http://localhost:5000",
-  "AutoReconnect": true,
-  "ReconnectInterval": 5000,
-  "ConnectionTimeout": 30000
-}
-```
+客户端启动后，点击右上角齿轮图标打开设置对话框，可配置：
 
-- `ServerUrl`: 后端服务器地址
-- `AutoReconnect`: 是否自动重连
-- `ReconnectInterval`: 重连间隔（毫秒）
-- `ConnectionTimeout`: 连接超时（毫秒）
+- **服务器 URL**: 后端服务地址（默认 http://192.168.0.196:5000）
+- **采集参数**:
+  - 采集间隔（毫秒）
+  - 采样点数
+  - 噪声水平
+- **分析参数**:
+  - 拟合算法选择
+  - 阈值设置
+  - 计算精度
+
+所有配置自动保存到本地 SQLite 数据库。
 
 ## 功能特性
 
 ### 已实现
-- 项目结构搭建
-- 基础配置
+- ✅ 深色工业风格主题（紫色调）
+- ✅ SignalR 实时通信和自动重连
+- ✅ 数据采集控制（开始/停止）
+- ✅ 实时数据可视化
+  - 2D 光斑图（ScottPlot）
+  - 3D 能量分布图（HelixToolkit）
+  - 实时曲线图表
+- ✅ 分析参数配置
+- ✅ 设置对话框（服务器地址、采集参数等）
+- ✅ 状态栏实时状态显示
+- ✅ 本地配置持久化（SQLite）
+- ✅ 结构化日志记录
 
 ### 待实现
-- 深色工业风格主题
-- 实时数据可视化（2D/3D）
-- SignalR 实时通信
-- 数据采集控制
-- 算法计算结果显示
-- 截图和报告生成
-- 数据库查询
+- ⏳ 自动测试功能
+- ⏳ 历史数据查询
+- ⏳ 报告生成和导出
+- ⏳ 截图功能
+- ⏳ 多语言支持
 
 ## 开发指南
 
@@ -140,5 +147,6 @@ MIT License
 
 ## 联系方式
 
-- 项目主页: https://github.com/yourorg/BeamQualityAnalyzer.Frontend
-- 问题反馈: https://github.com/yourorg/BeamQualityAnalyzer.Frontend/issues
+- 项目主页: https://github.com/autcommes/BeamQualityAnalyzer.Frontend
+- 问题反馈: https://github.com/autcommes/BeamQualityAnalyzer.Frontend/issues
+- 后端仓库: https://github.com/autcommes/BeamQualityAnalyzer.Backend
