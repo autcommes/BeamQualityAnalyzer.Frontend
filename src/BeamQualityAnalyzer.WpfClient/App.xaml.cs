@@ -246,12 +246,19 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        Log.Information("应用程序正在退出...");
+        
         // 断开 API 客户端连接
         if (_apiClient != null)
         {
             try
             {
-                _apiClient.DisconnectAsync().GetAwaiter().GetResult();
+                // 使用 Task.Run 避免死锁，并设置超时
+                var disconnectTask = Task.Run(async () => await _apiClient.DisconnectAsync());
+                if (!disconnectTask.Wait(TimeSpan.FromSeconds(3)))
+                {
+                    Log.Warning("断开连接超时");
+                }
                 _apiClient.Dispose();
             }
             catch (Exception ex)

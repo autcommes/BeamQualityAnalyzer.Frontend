@@ -34,6 +34,13 @@ public class VisualizationViewModel : ViewModelBase
     // 3D 能量分布数据
     private Point3D[,]? _energyDistributionData;
     
+    // 存储X和Y方向的3D数据
+    private Point3D[,]? _energyDistributionDataX;
+    private Point3D[,]? _energyDistributionDataY;
+    
+    // 当前选中的tab索引
+    private int _selectedTabIndex;
+    
     // 可视化设置
     private string _selectedColorMap = "Viridis";
     private double _zoomLevel = 1.0;
@@ -75,6 +82,28 @@ public class VisualizationViewModel : ViewModelBase
     {
         get => _energyDistributionData;
         set => SetProperty(ref _energyDistributionData, value);
+    }
+    
+    /// <summary>
+    /// 当前选中的tab索引
+    /// </summary>
+    /// <remarks>
+    /// 0: 光束直径 X
+    /// 1: 光束直径 Y
+    /// 2: 双曲拟合 X
+    /// 3: 双曲拟合 Y
+    /// </remarks>
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set
+        {
+            if (SetProperty(ref _selectedTabIndex, value))
+            {
+                // tab切换时更新3D视图
+                UpdateEnergyDistributionForSelectedTab();
+            }
+        }
     }
     
     /// <summary>
@@ -137,6 +166,8 @@ public class VisualizationViewModel : ViewModelBase
     /// </remarks>
     private void OnVisualizationDataUpdated(object? sender, VisualizationDataMessage e)
     {
+        Serilog.Log.Debug("VisualizationViewModel 收到可视化数据更新: SpotCenter=({X}, {Y})", e.SpotCenterX, e.SpotCenterY);
+        
         // 使用节流机制更新 2D 光斑数据
         _visualization2DThrottle.Throttle(() =>
         {
@@ -212,34 +243,91 @@ public class VisualizationViewModel : ViewModelBase
     {
         try
         {
-            // 反序列化 3D 能量分布数据
-            if (!string.IsNullOrEmpty(message.EnergyDistribution3DJson))
+            Serilog.Log.Debug("开始更新3D能量分布数据");
+            
+            // 反序列化 X 方向 3D 能量分布数据
+            if (!string.IsNullOrEmpty(message.EnergyDistribution3DXJson))
             {
-                var energyData = DeserializeMatrix(message.EnergyDistribution3DJson);
-                if (energyData != null)
+                var energyDataX = DeserializeMatrix(message.EnergyDistribution3DXJson);
+                if (energyDataX != null)
                 {
-                    // LOD 优化：根据缩放级别调整网格密度
-                    // 对于 3D 可视化，限制为 100x100 网格（性能考虑）
+                    Serilog.Log.Debug("3D数据X矩阵大小: {Rows}x{Cols}", energyDataX.GetLength(0), energyDataX.GetLength(1));
+                    
+                    // LOD 优化
                     const int maxSize = 100;
-                    int rows = energyData.GetLength(0);
-                    int cols = energyData.GetLength(1);
+                    int rows = energyDataX.GetLength(0);
+                    int cols = energyDataX.GetLength(1);
                     
                     if (rows > maxSize || cols > maxSize)
                     {
                         int targetRows = Math.Min(rows, maxSize);
                         int targetCols = Math.Min(cols, maxSize);
-                        energyData = DataDownsamplingHelper.DownsampleMatrixAverage(energyData, targetRows, targetCols);
+                        energyDataX = DataDownsamplingHelper.DownsampleMatrixAverage(energyDataX, targetRows, targetCols);
                     }
                     
-                    // 将 2D 强度矩阵转换为 3D Point3D 矩阵
-                    EnergyDistributionData = ConvertToPoint3DMatrix(energyData);
+                    _energyDistributionDataX = ConvertToPoint3DMatrix(energyDataX);
+                    Serilog.Log.Debug("3D能量分布数据X已更新");
                 }
             }
+            
+            // 反序列化 Y 方向 3D 能量分布数据
+            if (!string.IsNullOrEmpty(message.EnergyDistribution3DYJson))
+            {
+                var energyDataY = DeserializeMatrix(message.EnergyDistribution3DYJson);
+                if (energyDataY != null)
+                {
+                    Serilog.Log.Debug("3D数据Y矩阵大小: {Rows}x{Cols}", energyDataY.GetLength(0), energyDataY.GetLength(1));
+                    
+                    // LOD 优化
+                    const int maxSize = 100;
+                    int rows = energyDataY.GetLength(0);
+                    int cols = energyDataY.GetLength(1);
+                    
+                    if (rows > maxSize || cols > maxSize)
+                    {
+                        int targetRows = Math.Min(rows, maxSize);
+                        int targetCols = Math.Min(cols, maxSize);
+                        energyDataY = DataDownsamplingHelper.DownsampleMatrixAverage(energyDataY, targetRows, targetCols);
+                    }
+                    
+                    _energyDistributionDataY = ConvertToPoint3DMatrix(energyDataY);
+                    Serilog.Log.Debug("3D能量分布数据Y已更新");
+                }
+            }
+            
+            // 根据当前选中的tab更新显示
+            UpdateEnergyDistributionForSelectedTab();
         }
         catch (Exception ex)
         {
             // 记录错误但不抛出，避免影响其他功能
-            System.Diagnostics.Debug.WriteLine($"更新 3D 能量分布数据失败: {ex.Message}");
+            Serilog.Log.Error(ex, "更新 3D 能量分布数据失败");
+        }
+    }
+    
+    /// <summary>
+    /// 根据选中的tab更新3D能量分布显示
+    /// </summary>
+    private void UpdateEnergyDistributionForSelectedTab()
+    {
+        // 根据tab索引选择显示X或Y方向的数据
+        // Tab 0, 2: X方向
+        // Tab 1, 3: Y方向
+        if (_selectedTabIndex == 0 || _selectedTabIndex == 2)
+        {
+            if (_energyDistributionDataX != null)
+            {
+                EnergyDistributionData = _energyDistributionDataX;
+                Serilog.Log.Debug("切换到X方向3D视图");
+            }
+        }
+        else if (_selectedTabIndex == 1 || _selectedTabIndex == 3)
+        {
+            if (_energyDistributionDataY != null)
+            {
+                EnergyDistributionData = _energyDistributionDataY;
+                Serilog.Log.Debug("切换到Y方向3D视图");
+            }
         }
     }
     

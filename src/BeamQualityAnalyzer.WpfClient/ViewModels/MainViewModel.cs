@@ -185,6 +185,15 @@ public class MainViewModel : ViewModelBase
         _visualizationViewModel = new VisualizationViewModel(apiClient);
         _statusBarViewModel = new StatusBarViewModel(apiClient);
         
+        // 监听ChartViewModel的SelectedTabIndex变化，同步到VisualizationViewModel
+        _chartViewModel.PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(ChartViewModel.SelectedTabIndex))
+            {
+                _visualizationViewModel.SelectedTabIndex = _chartViewModel.SelectedTabIndex;
+            }
+        };
+        
         // 创建命令
         StartAcquisitionCommand = new AsyncRelayCommand(
             StartAcquisitionAsync,

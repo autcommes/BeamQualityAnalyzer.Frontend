@@ -240,6 +240,8 @@ public class ChartViewModel : ViewModelBase
         if (e.DataPoints == null || e.DataPoints.Length == 0)
             return;
         
+        Serilog.Log.Debug("ChartViewModel 收到原始数据: {Count} 个数据点", e.DataPoints.Length);
+        
         // 使用节流机制更新原始数据点
         _chartUpdateThrottle.Throttle(() =>
         {
@@ -257,6 +259,8 @@ public class ChartViewModel : ViewModelBase
             // 在 UI 线程上执行更新
             InvokeOnUIThread(() =>
             {
+                Serilog.Log.Debug("更新图表数据: X={XCount}, Y={YCount}", dataPointsX.Count, dataPointsY.Count);
+                
                 // 清空现有数据
                 RawDataX.Clear();
                 RawDataY.Clear();
@@ -284,6 +288,8 @@ public class ChartViewModel : ViewModelBase
     /// </remarks>
     private void OnCalculationCompleted(object? sender, CalculationCompletedMessage e)
     {
+        Serilog.Log.Debug("ChartViewModel 收到计算完成消息: M²(X)={MX}, M²(Y)={MY}", e.MSquaredX, e.MSquaredY);
+        
         // 使用节流机制更新拟合曲线
         _chartUpdateThrottle.Throttle(() =>
         {

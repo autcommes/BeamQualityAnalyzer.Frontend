@@ -125,6 +125,9 @@ public partial class ChartControl : UserControl
             return;
         }
 
+        Serilog.Log.Debug("ChartControl.UpdateChart: RawData={RawCount}, FittedCurve={FittedCount}", 
+            RawData?.Count ?? 0, FittedCurve?.Count ?? 0);
+
         WpfPlot.Plot.Clear();
 
         // 添加原始数据散点

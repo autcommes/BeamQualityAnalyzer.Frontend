@@ -198,9 +198,8 @@
                                 Padding="5">
                             <views:ChartControl 
                                 RawData="{Binding ChartViewModel.RawDataX}"
-                                FittedCurve="{Binding ChartViewModel.FittedCurveX}"
-                                XAxisLabel="探测器位置 (mm)"
-                                YAxisLabel="光斑直径 (μm)" />
+                                XAxisLabel="Detector Position (mm)"
+                                YAxisLabel="Beam Diameter (μm)" />
                         </Border>
                     </TabItem>
                     
@@ -213,9 +212,8 @@
                                 Padding="5">
                             <views:ChartControl 
                                 RawData="{Binding ChartViewModel.RawDataY}"
-                                FittedCurve="{Binding ChartViewModel.FittedCurveY}"
-                                XAxisLabel="探测器位置 (mm)"
-                                YAxisLabel="光斑直径 (μm)" />
+                                XAxisLabel="Detector Position (mm)"
+                                YAxisLabel="Beam Diameter (μm)" />
                         </Border>
                     </TabItem>
                     
@@ -229,8 +227,8 @@
                             <views:ChartControl 
                                 RawData="{Binding ChartViewModel.RawDataX}"
                                 FittedCurve="{Binding ChartViewModel.FittedCurveX}"
-                                XAxisLabel="探测器位置 (mm)"
-                                YAxisLabel="光斑直径 (μm)" />
+                                XAxisLabel="Detector Position (mm)"
+                                YAxisLabel="Beam Diameter (μm)" />
                         </Border>
                     </TabItem>
                     
@@ -244,8 +242,8 @@
                             <views:ChartControl 
                                 RawData="{Binding ChartViewModel.RawDataY}"
                                 FittedCurve="{Binding ChartViewModel.FittedCurveY}"
-                                XAxisLabel="探测器位置 (mm)"
-                                YAxisLabel="光斑直径 (μm)" />
+                                XAxisLabel="Detector Position (mm)"
+                                YAxisLabel="Beam Diameter (μm)" />
                         </Border>
                     </TabItem>
                 </TabControl>

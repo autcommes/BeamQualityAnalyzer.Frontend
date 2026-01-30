@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using BeamQualityAnalyzer.WpfClient.ViewModels;
 
 namespace BeamQualityAnalyzer.WpfClient;
 
@@ -19,5 +20,15 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Closing += OnWindowClosing;
+    }
+    
+    private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        // 清理 ViewModel 资源
+        if (DataContext is MainViewModel mainViewModel)
+        {
+            mainViewModel.UnsubscribeFromEvents();
+        }
     }
 }
