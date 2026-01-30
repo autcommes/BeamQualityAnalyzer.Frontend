@@ -1,0 +1,579 @@
+﻿<Window x:Class="BeamQualityAnalyzer.WpfClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BeamQualityAnalyzer.WpfClient"
+        xmlns:vm="clr-namespace:BeamQualityAnalyzer.WpfClient.ViewModels"
+        xmlns:views="clr-namespace:BeamQualityAnalyzer.WpfClient.Views"
+        mc:Ignorable="d"
+        Title="光束质量分析系统" 
+        Height="900" 
+        Width="1600"
+        WindowState="Maximized"
+        Background="{StaticResource BackgroundBrush}">
+    
+    <Window.Resources>
+        <!-- 值转换器 -->
+        <local:StatusLevelToColorConverter x:Key="StatusLevelToColorConverter"/>
+        <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
+        <local:BoolToConnectionTextConverter x:Key="BoolToConnectionTextConverter"/>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+    
+    <Grid>
+        <!-- 主布局：行定义 -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>   <!-- 标题栏 -->
+            <RowDefinition Height="*"/>    <!-- 主内容区 -->
+            <RowDefinition Height="30"/>   <!-- 状态栏 -->
+        </Grid.RowDefinitions>
+        
+        <!-- 主内容区：列定义 -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80"/>  <!-- 左侧导航栏 -->
+            <ColumnDefinition Width="2*"/>  <!-- 中间工作区 -->
+            <ColumnDefinition Width="1*"/>  <!-- 右侧可视化区 -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- ==================== 标题栏 ==================== -->
+        <Border Grid.Row="0" Grid.ColumnSpan="3" 
+                Background="{StaticResource TitleBarBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- 应用程序图标和标题 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="10,0">
+                    <TextBlock Text="⚡" 
+                               FontSize="20" 
+                               Foreground="{StaticResource AccentBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <TextBlock Text="光束质量分析系统" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- 连接状态指示器 -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="10,0">
+                    <Ellipse Width="8" Height="8" 
+                             Fill="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"
+                             VerticalAlignment="Center"
+                             Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding IsConnected, Converter={StaticResource BoolToConnectionTextConverter}}" 
+                               FontSize="12"
+                               Foreground="{StaticResource ForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- ==================== 左侧导航栏 ==================== -->
+        <Border Grid.Row="1" Grid.Column="0"
+                Background="{StaticResource NavigationBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <StackPanel Orientation="Vertical" Margin="0,10">
+                
+                <!-- 设置按钮 -->
+                <Button Style="{StaticResource NavigationButtonStyle}"
+                        Command="{Binding OpenSettingsCommand}"
+                        ToolTip="设置">
+                    <StackPanel>
+                        <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="设置" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- 分隔线 -->
+                <Separator Margin="10,10" Background="{StaticResource BorderBrush}"/>
+                
+                <!-- 开始按钮 -->
+                <Button Style="{StaticResource NavigationButtonStyle}"
+                        Command="{Binding StartAcquisitionCommand}"
+                        ToolTip="开始数据采集">
+                    <StackPanel>
+                        <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="开始" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- 急停按钮 -->
+                <Button Style="{StaticResource NavigationButtonStyle}"
+                        Command="{Binding EmergencyStopCommand}"
+                        ToolTip="急停">
+                    <StackPanel>
+                        <TextBlock Text="&#xE71A;" FontFamily="Segoe MDL2 Assets" FontSize="28" HorizontalAlignment="Center" Foreground="#F44747"/>
+                        <TextBlock Text="急停" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- 电机复位按钮 -->
+                <Button Style="{StaticResource NavigationButtonStyle}"
+                        Command="{Binding ResetMotorCommand}"
+                        ToolTip="电机复位">
+                    <StackPanel>
+                        <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="复位" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- 分隔线 -->
+                <Separator Margin="10,10" Background="{StaticResource BorderBrush}"/>
+                
+                <!-- 截图按钮 -->
+                <Button Style="{StaticResource NavigationButtonStyle}"
+                        Command="{Binding TakeScreenshotCommand}"
+                        ToolTip="截图">
+                    <StackPanel>
+                        <TextBlock Text="&#xE722;" FontFamily="Segoe MDL2 Assets" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="截图" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- 输出报告按钮 -->
+                <Button Style="{StaticResource NavigationButtonStyle}"
+                        Command="{Binding ExportReportCommand}"
+                        ToolTip="输出报告">
+                    <StackPanel>
+                        <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="报告" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- 写入数据库按钮 -->
+                <Button Style="{StaticResource NavigationButtonStyle}"
+                        Command="{Binding SaveToDatabaseCommand}"
+                        ToolTip="写入数据库">
+                    <StackPanel>
+                        <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="保存" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+                <!-- 自动测试按钮 -->
+                <Button Style="{StaticResource NavigationButtonStyle}"
+                        Command="{Binding StartAutoTestCommand}"
+                        ToolTip="自动测试">
+                    <StackPanel>
+                        <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="测试" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+            </StackPanel>
+        </Border>
+        
+        <!-- ==================== 中间工作区 ==================== -->
+        <Border Grid.Row="1" Grid.Column="1"
+                Background="{StaticResource BackgroundBrush}"
+                Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"/>  <!-- 图表区域 -->
+                    <RowDefinition Height="Auto"/> <!-- 参数表格 -->
+                    <RowDefinition Height="Auto"/> <!-- 重新计算面板 -->
+                </Grid.RowDefinitions>
+                
+                <!-- ==================== 图表区域（TabControl） ==================== -->
+                <TabControl Grid.Row="0"
+                            SelectedIndex="{Binding ChartViewModel.SelectedTabIndex}"
+                            Style="{StaticResource DefaultTabControlStyle}"
+                            Margin="0,0,0,10">
+                    
+                    <!-- 光束直径 X 标签页 -->
+                    <TabItem Header="光束直径 X" Style="{StaticResource DefaultTabItemStyle}">
+                        <Border Background="{StaticResource BackgroundBrush}" 
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="0,0,3,3"
+                                Padding="5">
+                            <views:ChartControl 
+                                RawData="{Binding ChartViewModel.RawDataX}"
+                                FittedCurve="{Binding ChartViewModel.FittedCurveX}"
+                                XAxisLabel="探测器位置 (mm)"
+                                YAxisLabel="光斑直径 (μm)" />
+                        </Border>
+                    </TabItem>
+                    
+                    <!-- 光束直径 Y 标签页 -->
+                    <TabItem Header="光束直径 Y" Style="{StaticResource DefaultTabItemStyle}">
+                        <Border Background="{StaticResource BackgroundBrush}" 
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="0,0,3,3"
+                                Padding="5">
+                            <views:ChartControl 
+                                RawData="{Binding ChartViewModel.RawDataY}"
+                                FittedCurve="{Binding ChartViewModel.FittedCurveY}"
+                                XAxisLabel="探测器位置 (mm)"
+                                YAxisLabel="光斑直径 (μm)" />
+                        </Border>
+                    </TabItem>
+                    
+                    <!-- 双曲拟合 X 标签页 -->
+                    <TabItem Header="双曲拟合 X" Style="{StaticResource DefaultTabItemStyle}">
+                        <Border Background="{StaticResource BackgroundBrush}" 
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="0,0,3,3"
+                                Padding="5">
+                            <views:ChartControl 
+                                RawData="{Binding ChartViewModel.RawDataX}"
+                                FittedCurve="{Binding ChartViewModel.FittedCurveX}"
+                                XAxisLabel="探测器位置 (mm)"
+                                YAxisLabel="光斑直径 (μm)" />
+                        </Border>
+                    </TabItem>
+                    
+                    <!-- 双曲拟合 Y 标签页 -->
+                    <TabItem Header="双曲拟合 Y" Style="{StaticResource DefaultTabItemStyle}">
+                        <Border Background="{StaticResource BackgroundBrush}" 
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="0,0,3,3"
+                                Padding="5">
+                            <views:ChartControl 
+                                RawData="{Binding ChartViewModel.RawDataY}"
+                                FittedCurve="{Binding ChartViewModel.FittedCurveY}"
+                                XAxisLabel="探测器位置 (mm)"
+                                YAxisLabel="光斑直径 (μm)" />
+                        </Border>
+                    </TabItem>
+                </TabControl>
+                
+                <!-- ==================== 参数表格 ==================== -->
+                <Border Grid.Row="1"
+                        Background="{StaticResource BackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="10"
+                        Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- 表格标题 -->
+                        <TextBlock Grid.Row="0"
+                                   Text="计算参数"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundBrush}"
+                                   Margin="0,0,0,10"/>
+                        
+                        <!-- 参数表格 -->
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding ChartViewModel.Parameters}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="Horizontal"
+                                  CanUserResizeRows="False"
+                                  CanUserReorderColumns="False"
+                                  CanUserSortColumns="False"
+                                  SelectionMode="Single"
+                                  Background="{StaticResource BackgroundBrush}"
+                                  Foreground="{StaticResource ForegroundBrush}"
+                                  BorderBrush="{StaticResource BorderBrush}"
+                                  BorderThickness="0"
+                                  RowBackground="{StaticResource BackgroundBrush}"
+                                  AlternatingRowBackground="{StaticResource NavigationBrush}"
+                                  HorizontalGridLinesBrush="{StaticResource BorderBrush}">
+                            
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="{StaticResource NavigationBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Padding" Value="10,8"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                            
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Padding" Value="10,6"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridCell">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.CellStyle>
+                            
+                            <DataGrid.Columns>
+                                <!-- 参数名称列 -->
+                                <DataGridTextColumn Header="参数名称" 
+                                                    Binding="{Binding Name}" 
+                                                    Width="*"
+                                                    FontWeight="SemiBold">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Padding" Value="5,0"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                
+                                <!-- 全局值列 -->
+                                <DataGridTextColumn Header="全局值" 
+                                                    Binding="{Binding GlobalValue}" 
+                                                    Width="*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="Padding" Value="5,0"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                
+                                <!-- X 方向值列 -->
+                                <DataGridTextColumn Header="X 方向值" 
+                                                    Binding="{Binding XValue}" 
+                                                    Width="*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="Padding" Value="5,0"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                
+                                <!-- Y 方向值列 -->
+                                <DataGridTextColumn Header="Y 方向值" 
+                                                    Binding="{Binding YValue}" 
+                                                    Width="*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="Padding" Value="5,0"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+                
+                <!-- ==================== 重新计算面板 ==================== -->
+                <Border Grid.Row="2"
+                        Background="{StaticResource BackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- 标题 -->
+                        <TextBlock Grid.Row="0"
+                                   Text="重新计算参数"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundBrush}"
+                                   Margin="0,0,0,10"/>
+                        
+                        <!-- 参数输入区 -->
+                        <Grid Grid.Row="1" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- 倍率 -->
+                            <TextBlock Grid.Column="0"
+                                       Text="倍率:"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource ForegroundBrush}"
+                                       Margin="0,0,10,0"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding ChartViewModel.Magnification, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource DefaultTextBoxStyle}"
+                                     VerticalContentAlignment="Center"
+                                     Padding="8,6"/>
+                            
+                            <!-- 86线结果 -->
+                            <TextBlock Grid.Column="3"
+                                       Text="86线结果:"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource ForegroundBrush}"
+                                       Margin="0,0,10,0"/>
+                            <TextBox Grid.Column="4"
+                                     Text="{Binding ChartViewModel.Line86Result, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource DefaultTextBoxStyle}"
+                                     VerticalContentAlignment="Center"
+                                     Padding="8,6"/>
+                            
+                            <!-- 二阶拟合结果 -->
+                            <TextBlock Grid.Column="6"
+                                       Text="二阶拟合结果:"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource ForegroundBrush}"
+                                       Margin="0,0,10,0"/>
+                            <TextBox Grid.Column="7"
+                                     Text="{Binding ChartViewModel.SecondOrderFitResult, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource DefaultTextBoxStyle}"
+                                     VerticalContentAlignment="Center"
+                                     Padding="8,6"/>
+                        </Grid>
+                        
+                        <!-- 按钮和验证错误区 -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- 重新计算按钮 -->
+                            <Button Grid.Column="0"
+                                    Content="重新计算"
+                                    Command="{Binding ChartViewModel.RecalculateCommand}"
+                                    Style="{StaticResource DefaultButtonStyle}"
+                                    Padding="20,8"
+                                    MinWidth="120"/>
+                            
+                            <!-- 验证错误提示 -->
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding ChartViewModel.ValidationError}"
+                                       Foreground="#F44747"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       Margin="15,0,0,0"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding ChartViewModel.HasValidationError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+        
+        <!-- ==================== 右侧可视化区 ==================== -->
+        <Border Grid.Row="1" Grid.Column="2"
+                Background="{StaticResource BackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1,0,0,0"
+                Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>  <!-- 2D 光斑 -->
+                    <RowDefinition Height="*"/>  <!-- 3D 能量分布 -->
+                </Grid.RowDefinitions>
+                
+                <!-- 2D 光斑视图 -->
+                <Border Grid.Row="0" 
+                        Background="#2D1B3D"
+                        CornerRadius="3"
+                        Margin="0,0,0,5">
+                    <views:Spot2DView 
+                        SpotIntensityData="{Binding VisualizationViewModel.SpotIntensityData}"
+                        SpotCenter="{Binding VisualizationViewModel.SpotCenter}"/>
+                </Border>
+                
+                <!-- 3D 能量分布视图 -->
+                <Border Grid.Row="1" 
+                        Background="{StaticResource BackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Margin="0,5,0,0">
+                    <views:Energy3DView 
+                        EnergyDistributionData="{Binding VisualizationViewModel.EnergyDistributionData}"/>
+                </Border>
+            </Grid>
+        </Border>
+        
+        <!-- ==================== 状态栏 ==================== -->
+        <Border Grid.Row="2" Grid.ColumnSpan="3"
+                Background="{StaticResource StatusBarBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>  <!-- 状态指示器 -->
+                    <ColumnDefinition Width="*"/>     <!-- 状态文本 -->
+                    <ColumnDefinition Width="Auto"/>  <!-- 进度条 -->
+                    <ColumnDefinition Width="Auto"/>  <!-- 时间戳 -->
+                </Grid.ColumnDefinitions>
+                
+                <!-- 状态指示器（彩色圆点） -->
+                <Ellipse Grid.Column="0"
+                         Width="10" 
+                         Height="10"
+                         Fill="{Binding StatusBarViewModel.StatusLevel, Converter={StaticResource StatusLevelToColorConverter}}"
+                         Margin="10,0,8,0"
+                         VerticalAlignment="Center"/>
+                
+                <!-- 状态文本 -->
+                <TextBlock Grid.Column="1"
+                           Text="{Binding StatusBarViewModel.StatusText}"
+                           Foreground="{StaticResource ForegroundBrush}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+                
+                <!-- 进度条（仅在有进度时显示） -->
+                <ProgressBar Grid.Column="2"
+                             Width="150"
+                             Height="4"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="{Binding StatusBarViewModel.ProgressValue, Mode=OneWay}"
+                             Visibility="{Binding StatusBarViewModel.IsProgressVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                             Style="{StaticResource DefaultProgressBarStyle}"
+                             Margin="10,0"
+                             VerticalAlignment="Center"/>
+                
+                <!-- 最后操作时间 -->
+                <TextBlock Grid.Column="3"
+                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           Margin="10,0">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="最后操作: {0:HH:mm:ss}">
+                            <Binding Path="StatusBarViewModel.LastOperationTime"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

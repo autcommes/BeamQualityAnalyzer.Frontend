@@ -1,0 +1,136 @@
+<UserControl x:Class="BeamQualityAnalyzer.WpfClient.Views.Energy3DView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BeamQualityAnalyzer.WpfClient.Views"
+             xmlns:helix="http://helix-toolkit.org/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="#5D3A7A">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" 
+                Background="#5D3A7A"
+                BorderBrush="#7A4A9A"
+                BorderThickness="0,0,0,1"
+                Padding="10,8">
+            <TextBlock Text="3D 能量分布" 
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Foreground="#D4D4D4"/>
+        </Border>
+        
+        <!-- HelixToolkit 3D 视口 -->
+        <helix:HelixViewport3D Grid.Row="1" 
+                               x:Name="Viewport3D"
+                               Background="#5D3A7A"
+                               ShowCoordinateSystem="False"
+                               ShowViewCube="False"
+                               ShowFrameRate="False"
+                               ZoomExtentsWhenLoaded="True"
+                               IsRotationEnabled="True"
+                               IsPanEnabled="True"
+                               IsZoomEnabled="True"
+                               RotationSensitivity="1"
+                               ZoomSensitivity="1">
+            
+            <!-- 相机设置 - 斜上方视角 -->
+            <helix:HelixViewport3D.Camera>
+                <PerspectiveCamera Position="500,500,400" 
+                                   LookDirection="-500,-500,-400" 
+                                   UpDirection="0,0,1"
+                                   FieldOfView="45"/>
+            </helix:HelixViewport3D.Camera>
+            
+            <!-- 光源 -->
+            <helix:SunLight/>
+            <ModelVisual3D>
+                <ModelVisual3D.Content>
+                    <AmbientLight Color="#404040"/>
+                </ModelVisual3D.Content>
+            </ModelVisual3D>
+            
+            <!-- 底部蓝色平面 -->
+            <helix:RectangleVisual3D Width="500" Length="500" 
+                                     Origin="0,0,0"
+                                     Normal="0,0,1"
+                                     Fill="#1A237E"/>
+            
+            <!-- 底部网格线 -->
+            <helix:GridLinesVisual3D Width="500"
+                                     Length="500"
+                                     MinorDistance="50"
+                                     MajorDistance="100"
+                                     Thickness="1"
+                                     Fill="#4A4A9A"
+                                     Center="0,0,1"/>
+            
+            <!-- 3D 坐标轴框架 - 左侧垂直面 -->
+            <helix:LinesVisual3D Thickness="1" Color="#9090C0">
+                <helix:LinesVisual3D.Points>
+                    <!-- 左侧垂直框架 -->
+                    <Point3D X="-250" Y="-250" Z="0"/>
+                    <Point3D X="-250" Y="-250" Z="250"/>
+                    <Point3D X="-250" Y="-250" Z="250"/>
+                    <Point3D X="-250" Y="250" Z="250"/>
+                    <Point3D X="-250" Y="250" Z="250"/>
+                    <Point3D X="-250" Y="250" Z="0"/>
+                    <!-- 左侧水平线 -->
+                    <Point3D X="-250" Y="-250" Z="50"/>
+                    <Point3D X="-250" Y="250" Z="50"/>
+                    <Point3D X="-250" Y="-250" Z="100"/>
+                    <Point3D X="-250" Y="250" Z="100"/>
+                    <Point3D X="-250" Y="-250" Z="150"/>
+                    <Point3D X="-250" Y="250" Z="150"/>
+                    <Point3D X="-250" Y="-250" Z="200"/>
+                    <Point3D X="-250" Y="250" Z="200"/>
+                    <!-- 左侧垂直线 -->
+                    <Point3D X="-250" Y="-150" Z="0"/>
+                    <Point3D X="-250" Y="-150" Z="250"/>
+                    <Point3D X="-250" Y="-50" Z="0"/>
+                    <Point3D X="-250" Y="-50" Z="250"/>
+                    <Point3D X="-250" Y="50" Z="0"/>
+                    <Point3D X="-250" Y="50" Z="250"/>
+                    <Point3D X="-250" Y="150" Z="0"/>
+                    <Point3D X="-250" Y="150" Z="250"/>
+                </helix:LinesVisual3D.Points>
+            </helix:LinesVisual3D>
+            
+            <!-- 3D 坐标轴框架 - 右侧垂直面 -->
+            <helix:LinesVisual3D Thickness="1" Color="#9090C0">
+                <helix:LinesVisual3D.Points>
+                    <!-- 右侧垂直框架 -->
+                    <Point3D X="250" Y="-250" Z="0"/>
+                    <Point3D X="250" Y="-250" Z="250"/>
+                    <Point3D X="250" Y="-250" Z="250"/>
+                    <Point3D X="-250" Y="-250" Z="250"/>
+                    <!-- 右侧水平线 -->
+                    <Point3D X="250" Y="-250" Z="50"/>
+                    <Point3D X="-250" Y="-250" Z="50"/>
+                    <Point3D X="250" Y="-250" Z="100"/>
+                    <Point3D X="-250" Y="-250" Z="100"/>
+                    <Point3D X="250" Y="-250" Z="150"/>
+                    <Point3D X="-250" Y="-250" Z="150"/>
+                    <Point3D X="250" Y="-250" Z="200"/>
+                    <Point3D X="-250" Y="-250" Z="200"/>
+                    <!-- 右侧垂直线 -->
+                    <Point3D X="150" Y="-250" Z="0"/>
+                    <Point3D X="150" Y="-250" Z="250"/>
+                    <Point3D X="50" Y="-250" Z="0"/>
+                    <Point3D X="50" Y="-250" Z="250"/>
+                    <Point3D X="-50" Y="-250" Z="0"/>
+                    <Point3D X="-50" Y="-250" Z="250"/>
+                    <Point3D X="-150" Y="-250" Z="0"/>
+                    <Point3D X="-150" Y="-250" Z="250"/>
+                </helix:LinesVisual3D.Points>
+            </helix:LinesVisual3D>
+            
+        </helix:HelixViewport3D>
+    </Grid>
+</UserControl>
